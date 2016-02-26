@@ -7,9 +7,9 @@ public class Data {
 
     private int id;
     private long timestamp;
-    private long x_value;
-    private long y_value;
-    private long z_value;
+    private double x_value;
+    private double y_value;
+    private double z_value;
 
     public long getTimestamp() {
         return timestamp;
@@ -27,28 +27,34 @@ public class Data {
         this.timestamp = timestamp;
     }
 
-    public long getX_value() {
+    public double getX_value() {
         return x_value;
     }
 
-    public void setX_value(long x_value) {
+    public void setX_value(double x_value) {
         this.x_value = x_value;
     }
 
-    public long getY_value() {
+    public double getY_value() {
         return y_value;
     }
 
-    public void setY_value(long y_value) {
+    public void setY_value(double y_value) {
         this.y_value = y_value;
     }
 
-    public long getZ_value() {
+    public double getZ_value() {
         return z_value;
     }
 
-    public void setZ_value(long z_value) {
+    public void setZ_value(double z_value) {
         this.z_value = z_value;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "id: " + this.id + ", timestamp: " + this.timestamp + ", XValue: " + this.x_value + ", YValue: " + this.y_value + ", ZValue: " + this.z_value;
     }
 
 

@@ -20,7 +20,13 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.example.abdul.healthmonitor.Util.DBHandler;
 import com.example.abdul.healthmonitor.Util.DBHelper;
+import com.example.abdul.healthmonitor.Util.HealthMonitorReaderContract;
+import com.example.abdul.healthmonitor.model.Data;
+
+import java.util.List;
+import java.util.ListIterator;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
@@ -38,10 +44,28 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     double linear_acceleration[] = {0,0,0};
     static int ACCE_FILTER_DATA_MIN_TIME = 1000; // 1000ms
     long lastSaved = System.currentTimeMillis();
-    boolean active = false;
+    DBHandler dbHandler;
+    private static final String TEXT_TYPE = " TEXT";
+    private static final String COMMA_SEP = ",";
 
-
-
+    private void deactivateSensor()
+    {
+        Log.d(TAG,"Sensor Deactivated");
+        mSensorManager.unregisterListener(this);
+    }
+    private void activateSensor()
+    {
+        deactivateSensor();
+        if(mSensor == null)
+        {
+            Log.d(SENSOR_ERROR_TAG,"Accelerometer not present on device");
+        }
+        else
+        {
+            Log.d(TAG,"Sensor Activated");
+            mSensorManager.registerListener(this,mSensor,mSensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,14 +73,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if(mSensor == null)
-        {
-            Log.d(SENSOR_ERROR_TAG,"Accelerometer not present on device");
-        }
-        else
-        {
-            mSensorManager.registerListener(this,mSensor,mSensorManager.SENSOR_DELAY_NORMAL);
-        }
+
 
         initializeVariables();
 
@@ -72,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         gv = new GraphView(MainActivity.this, val[0], "Graph", horLab, verLab, true);
         myLayoutParams.setMargins(20, 20, 20, 20);
         myLayout.addView(gv, myLayoutParams);
+
         create_table.setOnClickListener(new View.OnClickListener(){
 
             @Override
@@ -126,7 +144,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     sexString = "Female";
                 }
 
-                DBHelper dbHelper = new DBHelper(getApplicationContext());
+                String table_Name = nameString + "_" + idString + "_" + ageString + "_" + sexString;
+                HealthMonitorReaderContract.AccelerometerDataEntry.TABLE_NAME = table_Name;
+                dbHandler = new DBHandler(getApplicationContext());
+                dbHandler.open();
+                String SQL_DELETE_ENTRIES =
+                        "DROP TABLE IF EXISTS " + HealthMonitorReaderContract.AccelerometerDataEntry.TABLE_NAME;
+                String SQL_CREATE_ENTRIES =
+                        "CREATE TABLE " + table_Name + " (" +
+                                HealthMonitorReaderContract.AccelerometerDataEntry._ID + " INTEGER PRIMARY KEY autoincrement," +
+                                HealthMonitorReaderContract.AccelerometerDataEntry.XVALUE + " INTEGER" + COMMA_SEP +
+                                HealthMonitorReaderContract.AccelerometerDataEntry.YVALUE + " INTEGER" + COMMA_SEP +
+                                HealthMonitorReaderContract.AccelerometerDataEntry.ZVALUE + " INTEGER" + COMMA_SEP +
+                                HealthMonitorReaderContract.AccelerometerDataEntry.TIMESTAMP + " INTEGER" +
+                                " )";
+                dbHandler.executeQuery(SQL_DELETE_ENTRIES);
+                dbHandler.executeQuery(SQL_CREATE_ENTRIES);
+                dbHandler.open();
+                activateSensor();
+
+
             }
         });
         run.setOnClickListener(new View.OnClickListener() {
@@ -136,6 +173,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 int i = (int) (Math.random() * (val.length-1)) + 1;
                 gv.setValues(val[i]);
                 gv.clear();
+                List<Data> dataList = dbHandler.getFirstTenRecords();
+                ListIterator<Data> dataListIterator = dataList.listIterator();
+                while(dataListIterator.hasNext())
+                {
+                    Log.d(TAG,"Data: " + dataListIterator.next());
+                }
             }
         });
 
@@ -169,12 +212,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onPause()
     {
         super.onPause();
-        mSensorManager.unregisterListener(this);
+      //  mSensorManager.unregisterListener(this);
     }
     protected void onResume()
     {
         super.onResume();
-        mSensorManager.registerListener(this,mSensor,mSensorManager.SENSOR_DELAY_NORMAL);
+      //  activateSensor();
     }
     private void clearView(){
         View view = this.getCurrentFocus();
@@ -215,7 +258,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             linear_acceleration[0] = event.values[0] - gravity[0];
             linear_acceleration[1] = event.values[1] - gravity[1];
             linear_acceleration[2] = event.values[2] - gravity[2];
+            Dat a data = new Data();
+            data.setX_value(linear_acceleration[0]);
+            data.setY_value(linear_acceleration[1]);
+            data.setZ_value(linear_acceleration[2]);
+            data.setTimestamp(System.currentTimeMillis());
             Log.d(TAG, linear_acceleration.toString());
+            if(dbHandler == null)
+            {
+                dbHandler = new DBHandler(getApplicationContext());
+                dbHandler.open();
+            }
+            dbHandler.insert(data);
         }
     }
     /*private void generateRandomVals(){
