@@ -58,6 +58,16 @@ public class GraphView extends View {
         this.values = newValues;
     }
 
+    public void setHorLabels(String[] newValues)
+    {
+        this.horlabels = newValues;
+    }
+
+    public void setVerLabels(String[] newValues)
+    {
+        this.verlabels = newValues;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         float border = 20;

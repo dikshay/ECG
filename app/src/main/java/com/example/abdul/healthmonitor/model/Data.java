@@ -6,12 +6,12 @@ package com.example.abdul.healthmonitor.model;
 public class Data {
 
     private int id;
-    private long timestamp;
+    private String timestamp;
     private double x_value;
     private double y_value;
     private double z_value;
 
-    public long getTimestamp() {
+    public String getTimestamp() {
         return timestamp;
     }
 
@@ -23,7 +23,7 @@ public class Data {
         this.id = id;
     }
 
-    public void setTimestamp(long timestamp) {
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
 
