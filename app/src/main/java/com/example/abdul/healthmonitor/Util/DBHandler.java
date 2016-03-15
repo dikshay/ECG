@@ -246,41 +246,50 @@ public class DBHandler {
     }
     public List<Data> getFirstTenRecordsDownload(String tableName)
     {
-        if(!tableExists(tableName))
-        {
-            tableName = getAnyTable();
+        try {
+            if (!tableExists(tableName)) {
+                tableName = getAnyTable();
+            }
+            List<Data> dataList = new ArrayList<Data>();
+            String sortOrder =
+                    HealthMonitorReaderContract.AccelerometerDataEntry.TIMESTAMP + " DESC";
+            Cursor cursor = database.query(tableName,
+                    allColumns, null, null, null, null, sortOrder, "10");
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Data data = cursorToData(cursor);
+                dataList.add(data);
+                cursor.moveToNext();
+            }
+            cursor.close();
+            return dataList;
         }
-        List<Data> dataList = new ArrayList<Data>();
-        String sortOrder =
-                HealthMonitorReaderContract.AccelerometerDataEntry.TIMESTAMP + " DESC";
-        Cursor cursor = database.query(tableName,
-                allColumns,null,null,null,null,sortOrder,"10");
-        cursor.moveToFirst();
-        while(!cursor.isAfterLast())
+        catch(Exception e)
         {
-            Data data = cursorToData(cursor);
-            dataList.add(data);
-            cursor.moveToNext();
+            return new ArrayList<Data>();
         }
-        cursor.close();
-        return dataList;
     }
     public List<Data> getFirstTenRecords()
     {
-        List<Data> dataList = new ArrayList<Data>();
-        String sortOrder =
-                HealthMonitorReaderContract.AccelerometerDataEntry.TIMESTAMP + " DESC";
-        Cursor cursor = database.query(HealthMonitorReaderContract.AccelerometerDataEntry.TABLE_NAME,
-                allColumns,null,null,null,null,sortOrder,"10");
-        cursor.moveToFirst();
-        while(!cursor.isAfterLast())
-        {
-            Data data = cursorToData(cursor);
-            dataList.add(data);
-            cursor.moveToNext();
+        try {
+            List<Data> dataList = new ArrayList<Data>();
+            String sortOrder =
+                    HealthMonitorReaderContract.AccelerometerDataEntry.TIMESTAMP + " DESC";
+            Cursor cursor = database.query(HealthMonitorReaderContract.AccelerometerDataEntry.TABLE_NAME,
+                    allColumns, null, null, null, null, sortOrder, "10");
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                Data data = cursorToData(cursor);
+                dataList.add(data);
+                cursor.moveToNext();
+            }
+            cursor.close();
+            return dataList;
         }
-        cursor.close();
-        return dataList;
+        catch(Exception e)
+        {
+            return new ArrayList<Data>();
+        }
     }
     public Data cursorToData(Cursor cursor)
     {

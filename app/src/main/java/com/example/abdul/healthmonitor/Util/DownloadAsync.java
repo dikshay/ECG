@@ -1,5 +1,6 @@
 package com.example.abdul.healthmonitor.Util;
 
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
@@ -38,6 +39,7 @@ public class DownloadAsync extends AsyncTask<Void,Void,Void> {
     final String downloadFilePath = Environment.getExternalStorageDirectory()+"/downloads/";
     final String downloadFileName = "HealthMonitor_ak_dp_bb.db";
     int serverResponseCode = 0;
+    ProgressDialog dialog ;
 
     private void downloadFile() {
         {
@@ -164,6 +166,13 @@ public class DownloadAsync extends AsyncTask<Void,Void,Void> {
             }
         }
     }
+
+    @Override
+    protected void onPreExecute()
+    {
+        //super.onPreExecute();
+        dialog = ProgressDialog.show(activity, "Downloading", "Please wait ...", true);
+    }
     @Override
     protected Void doInBackground(Void... params) {
 
@@ -173,6 +182,7 @@ public class DownloadAsync extends AsyncTask<Void,Void,Void> {
     @Override
     protected void onPostExecute(Void result)
     {
+        dialog.dismiss();
         activity.updateGraphDownload();
     }
     public boolean isExternalStorageWritable() {

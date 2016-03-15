@@ -1,10 +1,13 @@
 package com.example.abdul.healthmonitor.Util;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.example.abdul.healthmonitor.MainActivity;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -29,12 +32,18 @@ import javax.net.ssl.X509TrustManager;
  */
 public class UploadAsync extends AsyncTask<Void, Void, Void> {
 
+    public MainActivity activity;
+    public UploadAsync(MainActivity a)
+    {
+        this.activity = a;
+    }
     String upLoadServerUri = "https://impact.asu.edu/Appenstance/UploadToServer.php";
     private static String DB_PATH =  "/data/data/com.example.abdul.healthmonitor/databases/";
     final String uploadFilePath = Environment.getExternalStorageDirectory()+"/downloads/";
     final String uploadFileName = "contextFile.txt";
     int serverResponseCode = 0;
     String sourceFileUri;
+    ProgressDialog dialog ;
 
     private void uploadFile() {
 
@@ -151,6 +160,14 @@ public class UploadAsync extends AsyncTask<Void, Void, Void> {
         }
     }
 
+    @Override
+    protected void onPreExecute() {
+        dialog = ProgressDialog.show(activity, "Uploading", "Please wait ...", true);
+    }
+    @Override
+    protected void onPostExecute(Void result) {
+        dialog.dismiss();
+    }
     @Override
     protected Void doInBackground(Void... params){
 

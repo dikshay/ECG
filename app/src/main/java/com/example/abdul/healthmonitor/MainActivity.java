@@ -162,6 +162,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Toast.makeText(getApplicationContext(),"Please Enter Name", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                else if(!checkAlphabetic(name.getText().toString()))
+                {
+                    Toast.makeText(getApplicationContext(),"Name should be a string", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 else
                 {
                     nameString = name.getText().toString().trim();
@@ -187,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 dbHandler = new DBHandler(getApplicationContext());
                 dbHandler.open();
                 String SQL_DELETE_ENTRIES =
-                        "DROP TABLE IF EXISTS " + HealthMonitorReaderContract.AccelerometerDataEntry.TABLE_NAME;
+                        "DROP TABLE IF EXISTS " + HealthMonitorReaderContract.AccelerometerDataEntry.TABLE_NAME+"";
                 String SQL_CREATE_ENTRIES =
                         "CREATE TABLE " + table_Name + " (" +
                                 HealthMonitorReaderContract.AccelerometerDataEntry._ID + " INTEGER PRIMARY KEY autoincrement," +
@@ -206,8 +211,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         run.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(dbHandler != null){
+                if(dbHandler != null && HealthMonitorReaderContract.AccelerometerDataEntry.TABLE_NAME != null){
+
                     updateGraph();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),"Please create tables first", Toast.LENGTH_SHORT).show();
                 }
 
                 /*while(true){
@@ -235,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View v)
             {
                 //dbHandler.getAllRecords();
-                UploadAsync uploadAsync = new UploadAsync();
+                UploadAsync uploadAsync = new UploadAsync(MainActivity.this);
                 uploadAsync.execute();
             }
         });
@@ -277,11 +287,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void updateGraph(){
 
         List<Data> dataList = dbHandler.getFirstTenRecords();
+
         ListIterator<Data> dataListIterator = dataList.listIterator();
-        float x_val[] = new float[10];
-        float y_val[] = new float[10];
-        float z_val[] = new float[10];
-        String hor_label[] = new String[10];
+        float x_val[] = new float[dataList.size()];
+        float y_val[] = new float[dataList.size()];
+        float z_val[] = new float[dataList.size()];
+        String hor_label[] = new String[dataList.size()];
         String ver_label[] = new String[6];
         int count = 0;
         Log.d(TAG, "Count: " + dataList.size());
@@ -314,10 +325,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         List<Data> dataList = dbHandler.getFirstTenRecordsDownload(HealthMonitorReaderContract.AccelerometerDataEntry.TABLE_NAME);
         ListIterator<Data> dataListIterator = dataList.listIterator();
-        float x_val[] = new float[10];
-        float y_val[] = new float[10];
-        float z_val[] = new float[10];
-        String hor_label[] = new String[10];
+        float x_val[] = new float[dataList.size()];
+        float y_val[] = new float[dataList.size()];
+        float z_val[] = new float[dataList.size()];
+        String hor_label[] = new String[dataList.size()];
         String ver_label[] = new String[6];
         int count = 0;
         Log.d(TAG, "Count: " + dataList.size());
@@ -412,6 +423,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+
+    public boolean checkAlphabetic(String text)
+    {
+        char[] chars = text.toCharArray();
+
+        for (char c : chars) {
+            if(!Character.isLetter(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
     //upload asyn task
     private class DownloadTask extends AsyncTask<String, Integer, String> {
 
